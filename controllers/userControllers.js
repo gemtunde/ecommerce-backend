@@ -21,7 +21,7 @@ const loginUser = async (req, res) => {
 
     if (isMatch) {
       const token = createToken(user._id);
-      res.status(200).json({ success: true, token });
+      res.json({ success: true, message: "Login successful", token });
     } else {
       return res.status(400).json({ message: "Invalid credentials" });
     }
@@ -38,7 +38,9 @@ const registerUser = async (req, res) => {
     //check if user exists
     const exists = await userModel.findOne({ email });
     if (exists) {
-      return res.status(400).json({ message: "Email already exists" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Email already exists" });
     }
     if (!validator.isEmail(email)) {
       return res.status(400).json({ success: false, message: "Invalid email" });
@@ -53,14 +55,18 @@ const registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     //create user
-    const newUser = await userModel.create({
+    const newUser = new userModel({
       name,
       email,
       password: hashedPassword,
     });
     const user = await newUser.save();
     const token = createToken(user._id);
-    res.status(200).json({ success: true, token });
+    res.json({
+      success: true,
+      message: "Account created  successful",
+      token,
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json({ success: false, message: error.message });
